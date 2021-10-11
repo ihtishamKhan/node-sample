@@ -4,7 +4,7 @@ function formSubmitted(event, form) {
     event.preventDefault();
     let title = form.title.value;
 
-    axios.post('http://127.0.0.1:3000/posts', {
+    axios.post('http://127.0.0.1:4000/posts', {
             title
         })
         .then((response) => {
@@ -20,25 +20,35 @@ function getPosts(theUrl) {
     axios.get(theUrl)
         .then((response) => {
             const posts = response.data;
+            console.log(posts);
             const renderedPosts = Object.values(posts).map(post => {
-                let commentsData = [];
-                let comments = axios.get(`http://127.0.0.1:3001/posts/${post.id}/comments`)
-                    .then((response) => {
-                        const commentsData = response.data;
-                        commentsData.map(comment => {
-                            commentContainer = document.querySelector(`#comment-container${post.id}`);
-                            commentContainer.innerHTML += `<li>${comment.content}</li>`;
-                        });
+                let commentsData = post.comments;
 
-                    }).catch((error) => {
-                        console.log(error);
-                    });
+                const modified = commentsData.map(comment => {
+                    let content;
+
+                    if (comment.status === 'approved') {
+                        content = comment.content;
+                    }
+
+                    if (comment.status === 'pending') {
+                        content = 'This comment is awaiting moderation';
+                    }
+
+                    if (comment.status === 'rejected') {
+                        content = 'This comment has been rejected';
+                    }
+
+                    return `
+                        <li>${content}</li>
+                    `
+                }).join(' ');
 
                 return `
                     <div class="card" style="width: 30%; margin-bottom: 20px;">
                         <div class="card-body">
                             <h3>${post.title}</h3>
-                            <ul id="comment-container${post.id}"></ul>
+                            <ul>${modified}</ul>
                             <form name="myCommentform" action="" method="POST">
                                 <div class="form-group mb-3">
                                     <label>New Comment</label>
@@ -63,7 +73,7 @@ function commentFormSubmitted(event, form, postId) {
     event.preventDefault();
     let content = form.content.value;
 
-    axios.post(`http://127.0.0.1:3001/posts/${postId}/comments`, {
+    axios.post(`http://127.0.0.1:4001/posts/${postId}/comments`, {
             content
         })
         .then((response) => {
@@ -75,4 +85,4 @@ function commentFormSubmitted(event, form, postId) {
     content = '';
 }
 
-const allPosts = getPosts('http://127.0.0.1:3000/posts');
+const allPosts = getPosts('http://127.0.0.1:4002/posts');

@@ -24,15 +24,19 @@ app.post('/posts', async(req, res) => {
         title
     };
     // https.post('http://localhost:3005/events', { hello: "hello" })
-    await axios.post('http://localhost:3005/events', {
-        type: 'PostCreated'
+    await axios.post('http://localhost:4005/events', {
+        type: 'PostCreated',
+        data: {
+            id,
+            title
+        }
     });
 
     res.status(201).send(posts[id]);
 });
 
 app.post('/events', (req, res) => {
-    console.log('Received Event', req.body.type);
+    console.log('Received Event:', req.body.type);
 
     res.send({});
 });
